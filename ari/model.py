@@ -21,7 +21,30 @@ import re
 import requests
 import logging
 
+from . import exceptions
+
 log = logging.getLogger(__name__)
+
+
+def _enrich_exceptions(function, client):
+    http_errors = {
+        404: exceptions.ARINotFound,
+        409: exceptions.ARINotInStasis,
+        500: exceptions.ARIServerError,
+    }
+
+    def decorator(**kwargs):
+        try:
+            return function(**kwargs)
+        except requests.HTTPError as e:
+            try:
+                exception_class = http_errors[e.response.status_code]
+            except KeyError:
+                raise e
+            raise exception_class(client, e)
+        except requests.RequestException as e:
+            raise exceptions.ARIException(client, e)
+    return decorator
 
 
 class Repository(object):
@@ -59,7 +82,7 @@ class Repository(object):
 
         # The returned function wraps the underlying operation, promoting the
         # received HTTP response to a first class object.
-        return lambda **kwargs: promote(self.client, oper(**kwargs), oper.json)
+        return _enrich_exceptions(lambda **kwargs: promote(self.client, oper(**kwargs), oper.json), self.client)
 
 
 class ObjectIdGenerator(object):
@@ -154,7 +177,7 @@ class BaseObject(object):
             kwargs.update(self.id_generator.get_params(self.json))
             return promote(self.client, oper(**kwargs), oper.json)
 
-        return enrich_operation
+        return _enrich_exceptions(enrich_operation, self.client)
 
     def on_event(self, event_type, fn, *args, **kwargs):
         """Register event callbacks for this specific domain object.

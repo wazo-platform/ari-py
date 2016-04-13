@@ -23,6 +23,7 @@ class Client(object):
     """
 
     def __init__(self, base_url, http_client):
+        self.base_url = base_url
         url = urlparse.urljoin(base_url, "ari/api-docs/resources.json")
 
         self.swagger = swaggerpy.client.SwaggerClient(
