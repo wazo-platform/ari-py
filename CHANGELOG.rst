@@ -1,3 +1,8 @@
+0.2.0 (2016-04-20)
+------------------
+
+- Replace HTTPError with more specific exceptions (not retrocompatible)
+
 0.1.3 (2014-09-08)
 ------------------
 
