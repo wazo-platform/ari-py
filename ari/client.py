@@ -118,14 +118,18 @@ class Client(object):
             apps = ','.join(apps)
         ws = self.swagger.events.eventWebsocket(app=apps)
         self.websockets.add(ws)
-        for app in apps.split(','):
-            for fn, args, kwargs in self._registered_callbacks[app]:
-                fn(*args, **kwargs)
+
+        self._execute_app_registered_callbacks(apps.split(','))
         try:
             self.__run(ws)
         finally:
             ws.close()
             self.websockets.remove(ws)
+
+    def _execute_app_registered_callbacks(self, registered_apps):
+        for app in registered_apps:
+            for fn, args, kwargs in self._registered_callbacks[app]:
+                fn(*args, **kwargs)
 
     def on_event(self, event_type, event_cb, *args, **kwargs):
         """Register callback for events with given type.
