@@ -48,8 +48,13 @@ Registering event callbacks
 Asterisk may send asyncronous messages over a WebSocket to indicate events of
 interest to the application.
 
-The ``Client`` object has an ``on_event`` method, which can be used to
-subscribe for specific events from Asterisk.
+The ``Client`` object has the following methods:
+
+* ``on_event(event_type, callback, *args, **kwargs)``, which can be used to
+  subscribe for specific events from Asterisk
+* ``on_application_registered(application_name, callback, *args, **kwargs)``,
+  which can be used to run code right after the application is registered to
+  Asterisk.
 
 The first-class objects also have 'on_event' methods, which can subscribe to
 Stasis events relating to that object.

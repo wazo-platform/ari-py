@@ -10,6 +10,8 @@ import logging
 import urlparse
 import swaggerpy.client
 
+from collections import defaultdict
+
 from ari.model import *
 
 log = logging.getLogger(__name__)
@@ -45,6 +47,7 @@ class Client(object):
         self.event_listeners = {}
         self.exception_handler = \
             lambda ex: log.exception("Event listener threw exception")
+        self._app_registered_callbacks = defaultdict(list)
 
     def __getattr__(self, item):
         """Exposes repositories as fields of the client.
@@ -115,11 +118,21 @@ class Client(object):
             apps = ','.join(apps)
         ws = self.swagger.events.eventWebsocket(app=apps)
         self.websockets.add(ws)
+
+        self._execute_app_registered_callbacks(apps.split(','))
         try:
             self.__run(ws)
         finally:
             ws.close()
             self.websockets.remove(ws)
+
+    def _execute_app_registered_callbacks(self, registered_apps):
+        for app in registered_apps:
+            for fn, args, kwargs in self._app_registered_callbacks[app]:
+                try:
+                    fn(*args, **kwargs)
+                except Exception as e:
+                    self.exception_handler(e)
 
     def on_event(self, event_type, event_cb, *args, **kwargs):
         """Register callback for events with given type.
@@ -201,6 +214,17 @@ class Client(object):
         return self.on_event(event_type, extract_objects,
                              *args,
                              **kwargs)
+
+    def on_application_registered(self, application_name, fn, *args, **kwargs):
+        """Register callback for application registered events
+
+        :param application_name: String name of the stasis application
+        :param fn: Callback function
+        :type  fn: (*args, **kwargs) -> None
+        :param args: Arguments to pass to fn
+        :param kwargs: Keyword arguments to pass to fn
+        """
+        self._app_registered_callbacks[application_name].append((fn, args, kwargs))
 
     def on_channel_event(self, event_type, fn, *args, **kwargs):
         """Register callback for Channel related events
