@@ -47,7 +47,7 @@ class Client(object):
         self.event_listeners = {}
         self.exception_handler = \
             lambda ex: log.exception("Event listener threw exception")
-        self._registered_callbacks = defaultdict(list)
+        self._app_registered_callbacks = defaultdict(list)
 
     def __getattr__(self, item):
         """Exposes repositories as fields of the client.
@@ -128,7 +128,7 @@ class Client(object):
 
     def _execute_app_registered_callbacks(self, registered_apps):
         for app in registered_apps:
-            for fn, args, kwargs in self._registered_callbacks[app]:
+            for fn, args, kwargs in self._app_registered_callbacks[app]:
                 fn(*args, **kwargs)
 
     def on_event(self, event_type, event_cb, *args, **kwargs):
@@ -221,7 +221,7 @@ class Client(object):
         :param args: Arguments to pass to fn
         :param kwargs: Keyword arguments to pass to fn
         """
-        self._registered_callbacks[application_name].append((fn, args, kwargs))
+        self._app_registered_callbacks[application_name].append((fn, args, kwargs))
 
     def on_channel_event(self, event_type, fn, *args, **kwargs):
         """Register callback for Channel related events
