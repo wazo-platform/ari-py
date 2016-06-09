@@ -129,7 +129,10 @@ class Client(object):
     def _execute_app_registered_callbacks(self, registered_apps):
         for app in registered_apps:
             for fn, args, kwargs in self._app_registered_callbacks[app]:
-                fn(*args, **kwargs)
+                try:
+                    fn(*args, **kwargs)
+                except Exception as e:
+                    self.exception_handler(e)
 
     def on_event(self, event_type, event_cb, *args, **kwargs):
         """Register callback for events with given type.
