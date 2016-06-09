@@ -10,6 +10,8 @@ import logging
 import urlparse
 import swaggerpy.client
 
+from collections import defaultdict
+
 from ari.model import *
 
 log = logging.getLogger(__name__)
@@ -45,6 +47,7 @@ class Client(object):
         self.event_listeners = {}
         self.exception_handler = \
             lambda ex: log.exception("Event listener threw exception")
+        self._registered_callbacks = defaultdict(list)
 
     def __getattr__(self, item):
         """Exposes repositories as fields of the client.
@@ -115,6 +118,9 @@ class Client(object):
             apps = ','.join(apps)
         ws = self.swagger.events.eventWebsocket(app=apps)
         self.websockets.add(ws)
+        for app in apps.split(','):
+            for fn, args, kwargs in self._registered_callbacks[app]:
+                fn(*args, **kwargs)
         try:
             self.__run(ws)
         finally:
@@ -201,6 +207,17 @@ class Client(object):
         return self.on_event(event_type, extract_objects,
                              *args,
                              **kwargs)
+
+    def on_application_registered(self, application_name, fn, *args, **kwargs):
+        """Register callback for application registered events
+
+        :param application_name: String name of the stasis application
+        :param fn: Callback function
+        :type  fn: (*args, **kwargs) -> None
+        :param args: Arguments to pass to fn
+        :param kwargs: Keyword arguments to pass to fn
+        """
+        self._registered_callbacks[application_name].append((fn, args, kwargs))
 
     def on_channel_event(self, event_type, fn, *args, **kwargs):
         """Register callback for Channel related events
