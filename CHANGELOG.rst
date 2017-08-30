@@ -1,3 +1,8 @@
+0.2.3 (2017-08-28)
+------------------
+
+- Avoid raising an exception when receiving an empty string on the web socket
+
 0.2.1 (2016-06-09)
 ------------------
 

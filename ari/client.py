@@ -89,6 +89,10 @@ class Client(object):
         # Fixed in plugin v3.0.1
         # noinspection PyTypeChecker
         for msg_str in iter(lambda: ws.recv(), None):
+            if not msg_str:
+                log.debug("Invalid empty event")
+                continue
+
             msg_json = json.loads(msg_str)
             if not isinstance(msg_json, dict) or 'type' not in msg_json:
                 log.error("Invalid event: %s" % msg_str)
