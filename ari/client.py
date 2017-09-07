@@ -48,6 +48,7 @@ class Client(object):
         self.exception_handler = \
             lambda ex: log.exception("Event listener threw exception")
         self._app_registered_callbacks = defaultdict(list)
+        self._app_deregistered_callbacks = defaultdict(list)
 
     def __getattr__(self, item):
         """Exposes repositories as fields of the client.
@@ -123,16 +124,23 @@ class Client(object):
         ws = self.swagger.events.eventWebsocket(app=apps)
         self.websockets.add(ws)
 
-        self._execute_app_registered_callbacks(apps.split(','))
+        self._execute_app_registered_callbacks(apps)
         try:
             self.__run(ws)
         finally:
+            self._execute_app_deregistered_callbacks(apps)
             ws.close()
             self.websockets.remove(ws)
 
-    def _execute_app_registered_callbacks(self, registered_apps):
-        for app in registered_apps:
-            for fn, args, kwargs in self._app_registered_callbacks[app]:
+    def _execute_app_deregistered_callbacks(self, apps):
+        self._execute_app_callbacks(apps, self._app_deregistered_callbacks)
+
+    def _execute_app_registered_callbacks(self, apps):
+        self._execute_app_callbacks(apps, self._app_registered_callbacks)
+
+    def _execute_app_callbacks(self, apps, callback_map):
+        for app in apps.split(','):
+            for fn, args, kwargs in callback_map[app]:
                 try:
                     fn(*args, **kwargs)
                 except Exception as e:
@@ -229,6 +237,17 @@ class Client(object):
         :param kwargs: Keyword arguments to pass to fn
         """
         self._app_registered_callbacks[application_name].append((fn, args, kwargs))
+
+    def on_application_deregistered(self, application_name, fn, *args, **kwargs):
+        """Register callback for application deregistered events
+
+        :param application_name: String name of the stasis application
+        :param fn: Callback function
+        :type  fn: (*args, **kwargs) -> None
+        :param args: Arguments to pass to fn
+        :param kwargs: Keyword arguments to pass to fn
+        """
+        self._app_deregistered_callbacks[application_name].append((fn, args, kwargs))
 
     def on_channel_event(self, event_type, fn, *args, **kwargs):
         """Register callback for Channel related events
