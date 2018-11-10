@@ -4,7 +4,8 @@ import ari
 import httpretty
 import json
 import unittest
-import urllib
+import six.moves.urllib as urllib
+import codecs
 
 from ari_test.utils import AriTestCase
 
@@ -18,9 +19,9 @@ DELETE = httpretty.DELETE
 # noinspection PyDocstring
 class ClientTest(AriTestCase):
     def test_docs(self):
-        fp = urllib.urlopen("http://ari.py/ari/api-docs/resources.json")
+        fp = urllib.request.urlopen("http://ari.py/ari/api-docs/resources.json")
         try:
-            actual = json.load(fp)
+            actual = json.load(codecs.getreader('utf-8')(fp))
             self.assertEqual(self.BASE_URL, actual['basePath'])
         finally:
             fp.close()

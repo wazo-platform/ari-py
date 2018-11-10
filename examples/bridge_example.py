@@ -11,6 +11,7 @@ enters the bridge, a tone is played to the bridge.
 # Copyright (c) 2013, Digium, Inc.
 #
 
+from __future__ import print_function
 import ari
 
 client = ari.connect('http://localhost:8088/', 'hey', 'peekaboo')
@@ -22,10 +23,10 @@ bridges = [b for b in client.bridges.list() if
            b.json['bridge_type'] == 'holding']
 if bridges:
     bridge = bridges[0]
-    print "Using bridge %s" % bridge.id
+    print("Using bridge %s" % bridge.id)
 else:
     bridge = client.bridges.create(type='holding')
-    print "Created bridge %s" % bridge.id
+    print("Created bridge %s" % bridge.id)
 
 
 def on_enter(bridge, ev):

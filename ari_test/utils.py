@@ -3,7 +3,7 @@
 import httpretty
 import os
 import unittest
-import urlparse
+import six.moves.urllib as urllib
 import ari
 import requests
 
@@ -41,7 +41,7 @@ class AriTestCase(unittest.TestCase):
         """
         url = cls.BASE_URL
         for arg in args:
-            url = urlparse.urljoin(url + '/', arg)
+            url = urllib.parse.urljoin(url + '/', arg)
         return url
 
     def serve_api(self):

@@ -7,10 +7,11 @@
 # Copyright (c) 2013, Digium, Inc.
 #
 
+from __future__ import print_function
 import ari
 import logging
 import sys
-import thread
+import six.moves._thread as thread
 
 logging.basicConfig()
 
@@ -68,8 +69,8 @@ def run():
 
 
 thr = thread.start_new_thread(run, ())
-print "Press enter to exit"
+print("Press enter to exit")
 sys.stdin.readline()
 client.close()
 sync.acquire()
-print "Application finished"
+print("Application finished")
