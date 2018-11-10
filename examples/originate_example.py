@@ -9,6 +9,7 @@
 #
 import requests
 
+from __future__ import print_function
 import ari
 
 from requests import HTTPError
@@ -24,10 +25,10 @@ bridges = [b for b in client.bridges.list()
            if b.json['bridge_type'] == 'holding']
 if bridges:
     holding_bridge = bridges[0]
-    print "Using bridge %s" % holding_bridge.id
+    print("Using bridge %s" % holding_bridge.id)
 else:
     holding_bridge = client.bridges.create(type='holding')
-    print "Created bridge %s" % holding_bridge.id
+    print("Created bridge %s" % holding_bridge.id)
 
 
 def safe_hangup(channel):

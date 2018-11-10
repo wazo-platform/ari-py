@@ -3,9 +3,9 @@
 import ari
 import httpretty
 import json
-import requests
 import unittest
-import urllib
+import six.moves.urllib as urllib
+import codecs
 
 from ari_test.utils import AriTestCase
 
@@ -19,9 +19,9 @@ DELETE = httpretty.DELETE
 # noinspection PyDocstring
 class ClientTest(AriTestCase):
     def test_docs(self):
-        fp = urllib.urlopen("http://ari.py/ari/api-docs/resources.json")
+        fp = urllib.request.urlopen("http://ari.py/ari/api-docs/resources.json")
         try:
-            actual = json.load(fp)
+            actual = json.load(codecs.getreader('utf-8')(fp))
             self.assertEqual(self.BASE_URL, actual['basePath'])
         finally:
             fp.close()
@@ -88,10 +88,10 @@ class ClientTest(AriTestCase):
         try:
             self.uut.channels.list()
             self.fail("Should have thrown an exception")
-        except requests.HTTPError as e:
-            self.assertEqual(500, e.response.status_code)
+        except ari.exceptions.ARIServerError as e:
+            self.assertEqual(500, e.original_error.response.status_code)
             self.assertEqual(
-                {"message": "This is just a test"}, e.response.json())
+                {"message": "This is just a test"}, e.original_error.response.json())
 
     def test_endpoints(self):
         self.serve(GET, 'endpoints',

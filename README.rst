@@ -150,7 +150,6 @@ TODO
 ====
 
  * Create asynchronous bindings that can be used with Twisted, Tornado, etc.
- * Add support for Python 3
 
 License
 -------
