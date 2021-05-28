@@ -31,6 +31,7 @@ def _enrich_exceptions(function, client):
         404: exceptions.ARINotFound,
         409: exceptions.ARINotInStasis,
         500: exceptions.ARIServerError,
+        503: exceptions.ARIServerUnavailable,
     }
 
     def decorator(**kwargs):

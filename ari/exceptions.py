@@ -21,3 +21,7 @@ class ARINotInStasis(ARIHTTPError):
 
 class ARIServerError(ARIHTTPError):
     pass
+
+
+class ARIServerUnavailable(ARIHTTPError):
+    pass
