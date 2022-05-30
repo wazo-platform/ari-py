@@ -1,6 +1,5 @@
-#
-# Copyright (c) 2013, Digium, Inc.
-#
+# Copyright 2013-2022 The Wazo Authors  (see the AUTHORS file)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 """ARI client library.
 """
@@ -95,20 +94,28 @@ class Client(object):
                 continue
 
             msg_json = json.loads(msg_str)
-            if not isinstance(msg_json, dict) or 'type' not in msg_json:
-                log.error("Invalid event: %s" % msg_str)
-                continue
+            self.on_stasis_event(msg_json)
 
-            listeners = list(self.event_listeners.get(msg_json['type'], []))
-            for listener in listeners:
-                # noinspection PyBroadException
-                try:
-                    callback, args, kwargs = listener
-                    args = args or ()
-                    kwargs = kwargs or {}
-                    callback(msg_json, *args, **kwargs)
-                except Exception as e:
-                    self.exception_handler(e)
+    def on_stasis_event(self, event):
+        if not isinstance(event, dict):
+            log.error('Invalid event not a dict: %s', event)
+            return
+
+        try:
+            listeners = list(self.event_listeners.get(event['type'], []))
+        except KeyError:
+            log.error('Invalid event no "type" key: %s', event)
+            return
+
+        for listener in listeners:
+            # noinspection PyBroadException
+            try:
+                callback, args, kwargs = listener
+                args = args or ()
+                kwargs = kwargs or {}
+                callback(event, *args, **kwargs)
+            except Exception as e:
+                self.exception_handler(e)
 
     def run(self, apps):
         """Connect to the WebSocket and begin processing messages.
