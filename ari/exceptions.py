@@ -28,6 +28,10 @@ class ARINotInStasis(ARIHTTPError):
     pass
 
 
+class ARIUnprocessable(ARIHTTPError):
+    pass
+
+
 class ARIServerError(ARIHTTPError):
     pass
 

@@ -30,6 +30,7 @@ def _enrich_exceptions(function, client):
     http_errors = {
         404: exceptions.ARINotFound,
         409: exceptions.ARINotInStasis,
+        422: exceptions.ARIUnprocessable,
         500: exceptions.ARIServerError,
         503: exceptions.ARIServerUnavailable,
     }
